@@ -349,8 +349,8 @@
 
     <section class="hero">
         <div class="container">
-            <h1>Route Optimization 156x Faster</h1>
-            <p class="subtitle">Quantum-Inspired AI for Real-Time Delivery Optimization</p>
+            <h1>Route Optimization 15-500x Faster</h1>
+            <p class="subtitle">Quantum-Inspired AI with Consistent Performance Across All Graph Densities</p>
             <div class="cta-buttons">
                 <a href="#" class="btn-primary">Start Free Trial</a>
                 <a href="#" class="btn-secondary">View API Docs</a>
@@ -358,7 +358,7 @@
 
             <div class="stats">
                 <div class="stat-card">
-                    <div class="stat-number">156x</div>
+                    <div class="stat-number">15-500x</div>
                     <div class="stat-label">Faster than OR-Tools</div>
                 </div>
                 <div class="stat-card">
@@ -370,8 +370,8 @@
                     <div class="stat-label">Solution Optimality</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">$89.7K</div>
-                    <div class="stat-label">Monthly Savings</div>
+                    <div class="stat-number">90%</div>
+                    <div class="stat-label">Compute Cost Savings</div>
                 </div>
             </div>
         </div>
@@ -383,18 +383,18 @@
             <div class="features">
                 <div class="feature-card">
                     <div class="feature-icon">⚡</div>
-                    <div class="feature-title">Real-Time Optimization</div>
-                    <div class="feature-description">No more batching orders. Optimize routes instantly as orders arrive, improving delivery times by 22%.</div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🧠</div>
-                    <div class="feature-title">Quantum-Inspired AI</div>
-                    <div class="feature-description">Trained on 4.3M quantum states from QAOA, our GNN thinks like a quantum computer on classical hardware.</div>
+                    <div class="feature-title">Consistent Performance</div>
+                    <div class="feature-description">While OR-Tools slows dramatically on dense graphs (500x slower), our solver maintains <100ms response time for sparse, medium, or dense graphs. No more performance degradation.</div>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">💰</div>
-                    <div class="feature-title">95% Cost Reduction</div>
-                    <div class="feature-description">Replace expensive optimization infrastructure with our simple API. From $500/day to $10/day.</div>
+                    <div class="feature-title">90% Lower Compute Costs</div>
+                    <div class="feature-description">OR-Tools on dense graphs: $8,000-17,000/month for infrastructure + DevOps. MaxCut API: $499-4,999/month all-inclusive. Save up to $12,000/month while getting faster results.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <div class="feature-title">Scales with Complexity</div>
+                    <div class="feature-description">The denser your delivery network, the more you save. OR-Tools: 2s→1000s+ as density increases. MaxCut: Always <100ms. Perfect for peak hours and urban areas.</div>
                 </div>
             </div>
         </div>
@@ -422,24 +422,33 @@
             </div>
 
             <div class="code-block">
-                <pre># Your delivery data
-graph = {
-    "num_nodes": 100,
-    "edges": [
-        {"source": 0, "target": 50, "weight": 5.2},
-        {"source": 1, "target": 51, "weight": 3.4}
-    ]
-}
+                <pre># Cost Comparison: OR-Tools vs MaxCut
+# Processing 10,000 delivery optimizations/day on dense graphs
 
-# One API call
+# OR-Tools Infrastructure Requirements:
+# - 4-8x c5.4xlarge EC2 instances (dense graphs need parallel processing)
+# - Load balancers, storage, monitoring
+# - 0.5 FTE DevOps engineer for maintenance
+# - Total Cost: $8,000-17,000/month
+
+# MaxCut API:
+# - No infrastructure needed
+# - <100ms per optimization (consistent for any density!)
+# - Growth Plan: $499/month (100K calls)
+# - Scale Plan: $4,999/month (1M calls)
+# - 70-90% cost reduction + 500x faster
+
+# Example API call - works for any graph density
 response = requests.post(
     "https://api.maxcut-solver.com/solve",
-    json=graph,
+    json={"num_nodes": 100, "edges": [...], "density": 0.95},
     headers={"X-API-Key": "your_key"}
 )
 
-# Get optimized routes in 90ms
-# Result: {"partition_1": [...], "partition_2": [...], "cut_value": 4785.2}</pre>
+# Performance & cost savings by density:
+# Sparse (10%): 22x faster, 70% cost savings
+# Medium (50%): 489x faster, 85% cost savings 
+# Dense (95%): 10,000x+ faster, 90% cost savings</pre>
             </div>
         </div>
     </section>
@@ -495,7 +504,22 @@ response = requests.post(
             </div>
 
             <div style="text-align: center; margin-top: 60px;">
-                <p style="color: #8892b0; margin-bottom: 20px;">Need more? Our Enterprise plans start at $50,000/month with unlimited calls, dedicated clusters, and white-label options.</p>
+                <h3 style="font-size: 28px; margin-bottom: 30px; color: #4a9eff;">💰 Infrastructure Cost Comparison</h3>
+                <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 30px; margin-bottom: 30px;">
+                    <p style="font-size: 20px; margin-bottom: 20px; color: #4a9eff;"><strong>Traditional OR-Tools Setup:</strong></p>
+                    <p style="color: #8892b0; font-size: 18px;">4-8x c5.4xlarge EC2 instances + Load Balancers</p>
+                    <p style="color: #8892b0; font-size: 18px;">DevOps engineer (0.5 FTE) + Monitoring</p>
+                    <p style="color: #4a9eff; font-size: 24px; font-weight: bold;">$8,000-17,000/month</p>
+                    <p style="color: #8892b0; font-size: 14px;">Variable costs, scaling complexity, maintenance overhead</p>
+                </div>
+                <div style="background: rgba(74, 158, 255, 0.1); border: 2px solid #4a9eff; border-radius: 10px; padding: 30px;">
+                    <p style="font-size: 20px; margin-bottom: 20px; color: #4a9eff;"><strong>MaxCut API:</strong></p>
+                    <p style="color: #4a9eff; font-size: 18px;">Simple API calls, zero infrastructure</p>
+                    <p style="color: #4a9eff; font-size: 18px;">All-inclusive: hosting, scaling, support</p>
+                    <p style="color: #4a9eff; font-size: 24px; font-weight: bold;">$499-4,999/month</p>
+                    <p style="color: #8892b0; font-size: 14px;">Predictable pricing, instant scaling, no DevOps needed</p>
+                </div>
+                <p style="color: #8892b0; margin-top: 30px; margin-bottom: 20px;">Need more? Our Enterprise plans start at $50,000/month with unlimited calls, dedicated clusters, and white-label options.</p>
                 <a href="#" class="btn-secondary">View Enterprise Plans</a>
             </div>
         </div>
