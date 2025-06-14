@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - MaxCut Solver</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #5A8FA8 0%, #7AABC8 100%);
+            --secondary-gradient: linear-gradient(135deg, #7AABC8 0%, #9CC0D8 100%);
+            --dark-bg: #1a2834;
+            --card-bg: rgba(90, 143, 168, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #b8d4e3;
+            --accent: #7AABC8;
+            --success: #4ade80;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --border: rgba(122, 171, 200, 0.2);
+            --code-bg: #243542;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(90, 143, 168, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(122, 171, 200, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(156, 192, 216, 0.08) 0%, transparent 50%);
+            animation: float 30s ease-in-out infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(15, 15, 30, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .btn-gradient {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(90, 143, 168, 0.3);
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(90, 143, 168, 0.4);
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            margin-top: 5rem;
+            position: relative;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 5rem;
+            width: 280px;
+            height: calc(100vh - 5rem);
+            background: rgba(255, 255, 255, 0.02);
+            border-right: 1px solid var(--border);
+            padding: 2rem;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar h3 {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: block;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            opacity: 0.1;
+            transition: left 0.3s ease;
+        }
+
+        .sidebar-nav a:hover::before {
+            left: 0;
+        }
+
+        .sidebar-nav a:hover {
+            color: var(--text-primary);
+            transform: translateX(5px);
+        }
+
+        .sidebar-nav a.active {
+            color: var(--accent);
+            background: rgba(102, 126, 234, 0.1);
+            font-weight: 500;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem 4rem 4rem;
+            max-width: 900px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Hero Section */
+        .hero-section {
+            padding: 4rem;
+            background: linear-gradient(135deg, rgba(90, 143, 168, 0.15) 0%, rgba(122, 171, 200, 0.15) 100%);
+            border-radius: 24px;
+            margin-bottom: 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .hero-section h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-section p {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quick-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quick-link {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+        .quick-link:hover {
+            border-color: var(--accent);
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        /* Typography */
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 3rem 0 1.5rem;
+            color: var(--text-primary);
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+        }
+
+        h3 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--text-primary);
+        }
+
+        h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            color: var(--text-primary);
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+
+        /* Sections */
+        .section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .section:hover::before {
+            transform: scaleX(1);
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .code-block:hover {
+            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.1);
+        }
+
+        .code-header {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-title {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .code-lang {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        pre {
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin: 0;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+            color: #e4e4e7;
+            line-height: 1.7;
+        }
+
+        /* Inline code */
+        p code, li code, td code {
+            background: rgba(102, 126, 234, 0.15);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: var(--accent);
+            font-weight: 500;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 0 0 1px var(--border);
+        }
+
+        th {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        tr:hover td {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 0.5rem;
+        }
+
+        .badge.required {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .badge.optional {
+            background: rgba(160, 160, 184, 0.2);
+            color: var(--text-secondary);
+            border: 1px solid rgba(160, 160, 184, 0.3);
+        }
+
+        /* Method badges */
+        .method {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .method.get {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .method.post {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        /* Endpoint blocks */
+        .endpoint {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .endpoint::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: var(--primary-gradient);
+            border-radius: 20px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        .endpoint:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .endpoint:hover::after {
+            opacity: 0.1;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .endpoint-path {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .tab.active {
+            color: white;
+            background: var(--primary-gradient);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Alert boxes */
+        .alert {
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin: 1.5rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: currentColor;
+        }
+
+        .alert-info {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.3);
+            color: var(--accent);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: var(--warning);
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        /* Copy button */
+        .copy-button {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-family: inherit;
+        }
+
+        .copy-button:hover {
+            border-color: var(--accent);
+            color: white;
+            background: var(--primary-gradient);
+            transform: translateY(-2px);
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Response status codes */
+        .status-code {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .status-code.success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-code.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Mobile toggle */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-gradient);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+            cursor: pointer;
+            z-index: 999;
+            font-size: 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 900;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+                box-shadow: 10px 0 40px rgba(0, 0, 0, 0.3);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 2rem;
+            }
+
+            .mobile-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            h2 {
+                font-size: 2rem;
+            }
+
+            .hero-section {
+                padding: 2rem;
+            }
+
+            .section {
+                padding: 2rem;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Links */
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            color: #8b9ff5;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">MaxCut</div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="#quickstart">Quickstart</a>
+                <a href="#endpoints">API Reference</a>
+                <a href="#examples">Examples</a>
+                <a href="/signup.html" class="btn-gradient">Get API Key</a>
+            </div>
+        </div>
+    </header>
+
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <h3>Getting Started</h3>
+            <ul class="sidebar-nav">
+                <li><a href="#introduction" class="active">Introduction</a></li>
+                <li><a href="#quickstart">Quickstart</a></li>
+                <li><a href="#authentication">Authentication</a></li>
+                <li><a href="#rate-limits">Rate Limits</a></li>
+            </ul>
+
+            <h3 style="margin-top: 2rem;">API Reference</h3>
+            <ul class="sidebar-nav">
+                <li><a href="#solve-endpoint">POST /solve</a></li>
+                <li><a href="#usage-endpoint">GET /auth/usage</a></li>
+                <li><a href="#recover-endpoint">POST /auth/recover</a></li>
+            </ul>
+
+            <h3 style="margin-top: 2rem;">Examples</h3>
+            <ul class="sidebar-nav">
+                <li><a href="#python-example">Python</a></li>
+                <li><a href="#javascript-example">JavaScript</a></li>
+                <li><a href="#curl-example">cURL</a></li>
+            </ul>
+
+            <h3 style="margin-top: 2rem;">Resources</h3>
+            <ul class="sidebar-nav">
+                <li><a href="#error-handling">Error Handling</a></li>
+                <li><a href="#best-practices">Best Practices</a></li>
+                <li><a href="#support">Support</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="hero-section">
+                <h1>API Documentation</h1>
+                <p>Everything you need to integrate MaxCut's quantum-inspired optimization into your applications</p>
+                <div class="quick-links">
+                    <a href="#quickstart" class="quick-link">🚀 Quickstart Guide</a>
+                    <a href="#endpoints" class="quick-link">📖 API Reference</a>
+                    <a href="#examples" class="quick-link">💻 Code Examples</a>
+                    <a href="/signup.html" class="quick-link">🔑 Get API Key</a>
+                </div>
+            </div>
+
+            <section id="introduction" class="section">
+                <h2>Introduction</h2>
+                <p>
+                    The MaxCut Solver API provides quantum-inspired optimization for complex routing and partitioning problems. 
+                    Our Graph Neural Network approach delivers solutions 729x faster than traditional methods while maintaining 98% optimality.
+                </p>
+                <p>
+                    Perfect for logistics companies, delivery platforms, and any application requiring real-time network optimization.
+                </p>
+
+                <div class="alert alert-info">
+                    <span class="alert-icon">💡</span>
+                    <div>
+                        <strong>New to MaxCut?</strong> Start with our <a href="#quickstart">Quickstart Guide</a> 
+                        to make your first API call in minutes.
+                    </div>
+                </div>
+            </section>
+
+            <section id="quickstart" class="section">
+                <h2>Quickstart</h2>
+                
+                <h3>1. Get Your API Key</h3>
+                <p>Sign up for a free account to receive your API key. You'll get 1,000 free calls to start.</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Sign up via API</span>
+                        <span class="code-lang">cURL</span>
+                    </div>
+                    <pre><code>curl -X POST "https://api.maxcut-solver.com/auth/signup" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "you@company.com", "company": "Your Company"}'</code></pre>
+                </div>
+
+                <h3>2. Make Your First Request</h3>
+                <p>Use your API key to solve a simple graph optimization problem:</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">First API call</span>
+                        <span class="code-lang">cURL</span>
+                    </div>
+                    <pre><code>curl -X POST "https://api.maxcut-solver.com/solve" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "num_nodes": 4,
+    "edges": [
+      {"source": 0, "target": 1, "weight": 1.0},
+      {"source": 1, "target": 2, "weight": 2.0},
+      {"source": 2, "target": 3, "weight": 1.5},
+      {"source": 3, "target": 0, "weight": 2.5}
+    ]
+  }'</code></pre>
+                </div>
+
+                <h3>3. Understand the Response</h3>
+                <p>The API returns the optimal partition and performance metrics:</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Response format</span>
+                        <span class="code-lang">JSON</span>
+                    </div>
+                    <pre><code>{
+  "cut_value": 5.5,
+  "partition": [0, 1, 0, 1],
+  "solve_time_ms": 12.3,
+  "method_used": "GNN",
+  "node_count": 4,
+  "edge_count": 4
+}</code></pre>
+                </div>
+            </section>
+
+            <section id="authentication" class="section">
+                <h2>Authentication</h2>
+                <p>
+                    All API requests require authentication using your API key. Include your key in the 
+                    <code>X-API-Key</code> header of every request.
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Authentication header</span>
+                        <span class="code-lang">HTTP</span>
+                    </div>
+                    <pre><code>X-API-Key: sk_live_a3unwWxJgLd8pSMuaOUB-PFVlCTPZvuDbTIgrqcVIvY</code></pre>
+                </div>
+
+                <div class="alert alert-warning">
+                    <span class="alert-icon">⚠️</span>
+                    <div>
+                        <strong>Security Note:</strong> Never expose your API key in client-side code or public repositories. 
+                        Keep it secure on your backend servers.
+                    </div>
+                </div>
+            </section>
+
+            <section id="endpoints" class="section">
+                <h2>API Endpoints</h2>
+
+                <div class="endpoint" id="solve-endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="endpoint-path">/solve</span>
+                    </div>
+                    <p>Solve a MaxCut optimization problem for the given graph.</p>
+
+                    <h4>Headers</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>X-API-Key</code><span class="badge required">required</span></td>
+                                <td>string</td>
+                                <td>Your API authentication key</td>
+                            </tr>
+                            <tr>
+                                <td><code>Content-Type</code><span class="badge required">required</span></td>
+                                <td>string</td>
+                                <td>Must be <code>application/json</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Request Body</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>num_nodes</code><span class="badge required">required</span></td>
+                                <td>integer</td>
+                                <td>Number of nodes in the graph (2-200)</td>
+                            </tr>
+                            <tr>
+                                <td><code>edges</code><span class="badge required">required</span></td>
+                                <td>array</td>
+                                <td>Array of edge objects defining the graph</td>
+                            </tr>
+                            <tr>
+                                <td><code>edges[].source</code><span class="badge required">required</span></td>
+                                <td>integer</td>
+                                <td>Source node index (0-based)</td>
+                            </tr>
+                            <tr>
+                                <td><code>edges[].target</code><span class="badge required">required</span></td>
+                                <td>integer</td>
+                                <td>Target node index (0-based)</td>
+                            </tr>
+                            <tr>
+                                <td><code>edges[].weight</code><span class="badge required">required</span></td>
+                                <td>float</td>
+                                <td>Edge weight (positive value)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Response</h4>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-title">Success response</span>
+                            <span class="code-lang">JSON</span>
+                        </div>
+                        <pre><code>{
+  "cut_value": 42.5,
+  "partition": [0, 1, 1, 0, 1, 0],
+  "solve_time_ms": 23.4,
+  "method_used": "GNN",
+  "node_count": 6,
+  "edge_count": 9
+}</code></pre>
+                    </div>
+
+                    <h4>Response Fields</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>cut_value</code></td>
+                                <td>float</td>
+                                <td>Total weight of edges crossing the partition</td>
+                            </tr>
+                            <tr>
+                                <td><code>partition</code></td>
+                                <td>array</td>
+                                <td>Binary array indicating partition assignment (0 or 1) for each node</td>
+                            </tr>
+                            <tr>
+                                <td><code>solve_time_ms</code></td>
+                                <td>float</td>
+                                <td>Time taken to solve in milliseconds</td>
+                            </tr>
+                            <tr>
+                                <td><code>method_used</code></td>
+                                <td>string</td>
+                                <td>Algorithm used (GNN, LOCAL_SEARCH, or GUROBI)</td>
+                            </tr>
+                            <tr>
+                                <td><code>node_count</code></td>
+                                <td>integer</td>
+                                <td>Number of nodes in the graph</td>
+                            </tr>
+                            <tr>
+                                <td><code>edge_count</code></td>
+                                <td>integer</td>
+                                <td>Number of edges in the graph</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="endpoint" id="usage-endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span class="endpoint-path">/auth/usage</span>
+                    </div>
+                    <p>Check your current API usage and account details.</p>
+
+                    <h4>Headers</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>X-API-Key</code><span class="badge required">required</span></td>
+                                <td>string</td>
+                                <td>Your API authentication key</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Response</h4>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-title">Success response</span>
+                            <span class="code-lang">JSON</span>
+                        </div>
+                        <pre><code>{
+  "email": "user@company.com",
+  "company": "Your Company",
+  "api_calls_used": 150,
+  "api_calls_limit": 1000,
+  "plan": "starter",
+  "created_at": "2025-06-14T10:00:00Z",
+  "last_used": "2025-06-14T15:30:00Z"
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="endpoint" id="recover-endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span class="endpoint-path">/auth/recover</span>
+                    </div>
+                    <p>Recover your API key by sending it to your registered email address.</p>
+
+                    <h4>Query Parameters</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>email</code><span class="badge required">required</span></td>
+                                <td>string</td>
+                                <td>Email address associated with your account</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Response</h4>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-title">Success response</span>
+                            <span class="code-lang">JSON</span>
+                        </div>
+                        <pre><code>{
+  "message": "API key has been sent to your email address"
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="rate-limits" class="section">
+                <h2>Rate Limits</h2>
+                <p>Rate limits vary by plan to ensure fair usage and optimal performance for all users.</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Plan</th>
+                            <th>Requests per Second</th>
+                            <th>Monthly API Calls</th>
+                            <th>Burst Limit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Starter</td>
+                            <td>10</td>
+                            <td>1,000 free + pay-as-you-go</td>
+                            <td>20</td>
+                        </tr>
+                        <tr>
+                            <td>Growth</td>
+                            <td>100</td>
+                            <td>100,000 included</td>
+                            <td>200</td>
+                        </tr>
+                        <tr>
+                            <td>Scale</td>
+                            <td>1,000</td>
+                            <td>1M included</td>
+                            <td>2,000</td>
+                        </tr>
+                        <tr>
+                            <td>Enterprise</td>
+                            <td>Custom</td>
+                            <td>10M+ included</td>
+                            <td>Custom</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>Rate Limit Headers</h4>
+                <p>Every API response includes headers showing your current rate limit status:</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Rate limit headers</span>
+                        <span class="code-lang">HTTP</span>
+                    </div>
+                    <pre><code>X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1623456789</code></pre>
+                </div>
+            </section>
+
+            <section id="examples" class="section">
+                <h2>Code Examples</h2>
+                
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('python')">Python</button>
+                    <button class="tab" onclick="showTab('javascript')">JavaScript</button>
+                    <button class="tab" onclick="showTab('curl')">cURL</button>
+                </div>
+
+                <div class="tab-content active" id="python-content">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-title">Complete Python example</span>
+                            <span class="code-lang">Python</span>
+                        </div>
+                        <pre><code>import requests
+import json
+
+# Configuration
+API_KEY = "your_api_key_here"
+API_URL = "https://api.maxcut-solver.com/solve"
+
+def solve_maxcut(nodes, edges):
+    """
+    Solve a MaxCut problem using the MaxCut API
+    
+    Args:
+        nodes: Number of nodes in the graph
+        edges: List of edges with source, target, and weight
+    
+    Returns:
+        dict: Solution with partition and cut value
+    """
+    headers = {
+        "X-API-Key": API_KEY,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "num_nodes": nodes,
+        "edges": edges
+    }
+    
+    try:
+        response = requests.post(API_URL, headers=headers, json=payload)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+        return None
+
+# Example: Delivery route optimization
+if __name__ == "__main__":
+    # Define your delivery network
+    delivery_network = {
+        "num_nodes": 6,
+        "edges": [
+            {"source": 0, "target": 1, "weight": 2.5},  # Hub to Zone A
+            {"source": 0, "target": 2, "weight": 3.1},  # Hub to Zone B
+            {"source": 1, "target": 3, "weight": 1.8},  # Zone A to Zone C
+            {"source": 2, "target": 4, "weight": 2.2},  # Zone B to Zone D
+            {"source": 3, "target": 5, "weight": 1.5},  # Zone C to Zone E
+            {"source": 4, "target": 5, "weight": 2.8},  # Zone D to Zone E
+        ]
+    }
+    
+    # Solve the optimization problem
+    result = solve_maxcut(
+        delivery_network["num_nodes"], 
+        delivery_network["edges"]
+    )
+    
+    if result:
+        print(f"Optimal Cut Value: {result['cut_value']}")
+        print(f"Partition: {result['partition']}")
+        print(f"Solve Time: {result['solve_time_ms']}ms")
+        
+        # Interpret results
+        print("\nDelivery Zone Assignment:")
+        for i, partition in enumerate(result['partition']):
+            print(f"  Zone {i}: Route {'A' if partition == 0 else 'B'}")</code></pre>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="javascript-content">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-title">Complete JavaScript example</span>
+                            <span class="code-lang">JavaScript</span>
+                        </div>
+                        <pre><code>const API_KEY = 'your_api_key_here';
+const API_URL = 'https://api.maxcut-solver.com/solve';
+
+async function solveMaxCut(numNodes, edges) {
+    const headers = {
+        'X-API-Key': API_KEY,
+        'Content-Type': 'application/json'
+    };
+    
+    const payload = {
+        num_nodes: numNodes,
+        edges: edges
+    };
+    
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
+    }
+}
+
+// Example: E-commerce warehouse distribution
+async function optimizeWarehouseRoutes() {
+    // Define warehouse network
+    const warehouseNetwork = {
+        numNodes: 8,
+        edges: [
+            {source: 0, target: 1, weight: 4.2},  // Main to North
+            {source: 0, target: 2, weight: 3.8},  // Main to South
+            {source: 1, target: 3, weight: 2.1},  // North to NE
+            {source: 1, target: 4, weight: 2.5},  // North to NW
+            {source: 2, target: 5, weight: 1.9},  // South to SE
+            {source: 2, target: 6, weight: 2.3},  // South to SW
+            {source: 3, target: 7, weight: 1.5},  // NE to East
+            {source: 6, target: 7, weight: 3.2},  // SW to East
+        ]
+    };
+    
+    const result = await solveMaxCut(
+        warehouseNetwork.numNodes,
+        warehouseNetwork.edges
+    );
+    
+    if (result) {
+        console.log('Optimization Results:');
+        console.log(`Cut Value: ${result.cut_value}`);
+        console.log(`Solve Time: ${result.solve_time_ms}ms`);
+        
+        // Visualize partition
+        console.log('\nWarehouse Zone Assignment:');
+        const zones = ['Main', 'North', 'South', 'NE', 'NW', 'SE', 'SW', 'East'];
+        result.partition.forEach((group, i) => {
+            console.log(`  ${zones[i]}: Distribution Group ${group + 1}`);
+        });
+    }
+}
+
+// Run the optimization
+optimizeWarehouseRoutes();</code></pre>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="curl-content">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-title">Complete cURL example</span>
+                            <span class="code-lang">Bash</span>
+                        </div>
+                        <pre><code>#!/bin/bash
+
+# Set your API key
+API_KEY="your_api_key_here"
+API_URL="https://api.maxcut-solver.com/solve"
+
+# Example: Supply chain network optimization
+# 10 distribution centers with connections
+
+curl -X POST "$API_URL" \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "num_nodes": 10,
+    "edges": [
+      {"source": 0, "target": 1, "weight": 5.2},
+      {"source": 0, "target": 2, "weight": 4.8},
+      {"source": 1, "target": 3, "weight": 3.1},
+      {"source": 1, "target": 4, "weight": 2.9},
+      {"source": 2, "target": 5, "weight": 3.7},
+      {"source": 3, "target": 6, "weight": 2.2},
+      {"source": 4, "target": 7, "weight": 2.8},
+      {"source": 5, "target": 8, "weight": 3.3},
+      {"source": 6, "target": 9, "weight": 1.9},
+      {"source": 7, "target": 9, "weight": 2.5},
+      {"source": 8, "target": 9, "weight": 3.0}
+    ]
+  }' | python -m json.tool
+
+# The response will show the optimal partition for your distribution network</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="error-handling" class="section">
+                <h2>Error Handling</h2>
+                <p>The API uses standard HTTP status codes to indicate success or failure.</p>
+
+                <h3>Status Codes</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Description</th>
+                            <th>Common Causes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="status-code success">200</span></td>
+                            <td>Success</td>
+                            <td>Request processed successfully</td>
+                        </tr>
+                        <tr>
+                            <td><span class="status-code error">400</span></td>
+                            <td>Bad Request</td>
+                            <td>Invalid input format, missing required fields</td>
+                        </tr>
+                        <tr>
+                            <td><span class="status-code error">401</span></td>
+                            <td>Unauthorized</td>
+                            <td>Missing or invalid API key</td>
+                        </tr>
+                        <tr>
+                            <td><span class="status-code error">429</span></td>
+                            <td>Too Many Requests</td>
+                            <td>Rate limit exceeded</td>
+                        </tr>
+                        <tr>
+                            <td><span class="status-code error">500</span></td>
+                            <td>Internal Server Error</td>
+                            <td>Unexpected server error</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Error Response Format</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Error response</span>
+                        <span class="code-lang">JSON</span>
+                    </div>
+                    <pre><code>{
+  "detail": "Invalid API key provided",
+  "status": 401,
+  "type": "authentication_error"
+}</code></pre>
+                </div>
+            </section>
+
+            <section id="best-practices" class="section">
+                <h2>Best Practices</h2>
+                
+                <h3>1. Efficient Graph Representation</h3>
+                <p>Use the minimum necessary edges to represent your network:</p>
+                <ul>
+                    <li>Remove duplicate edges (keep only one edge between any two nodes)</li>
+                    <li>Use 0-based node indexing</li>
+                    <li>Ensure all node indices are within range [0, num_nodes-1]</li>
+                </ul>
+
+                <h3>2. Optimal Problem Sizes</h3>
+                <p>While we support up to 200 nodes, consider these guidelines:</p>
+                <ul>
+                    <li><strong>2-50 nodes:</strong> Real-time applications (<50ms response)</li>
+                    <li><strong>50-100 nodes:</strong> Interactive applications (<500ms response)</li>
+                    <li><strong>100-200 nodes:</strong> Batch processing (<2s response)</li>
+                </ul>
+
+                <h3>3. Error Handling</h3>
+                <p>Always implement proper error handling:</p>
+                <ul>
+                    <li>Check HTTP status codes</li>
+                    <li>Implement exponential backoff for rate limits</li>
+                    <li>Log errors for debugging</li>
+                    <li>Have fallback strategies for critical operations</li>
+                </ul>
+
+                <h3>4. Security</h3>
+                <p>Keep your API key secure:</p>
+                <ul>
+                    <li>Never expose keys in client-side code</li>
+                    <li>Use environment variables for key storage</li>
+                    <li>Rotate keys periodically</li>
+                    <li>Monitor usage for anomalies</li>
+                </ul>
+            </section>
+
+            <section id="support" class="section">
+                <h2>Support</h2>
+                
+                <div class="alert alert-info">
+                    <span class="alert-icon">📧</span>
+                    <div>
+                        <strong>Need Help?</strong> Contact our support team at 
+                        <a href="mailto:info@qohere.in">info@qohere.in</a>
+                    </div>
+                </div>
+
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="https://github.com/maxcut-solver/examples">GitHub Examples</a> - Sample implementations</li>
+                    <li><a href="/status">API Status</a> - Current system status</li>
+                    <li><a href="/changelog">Changelog</a> - Latest updates and features</li>
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <footer style="background: var(--dark-bg); border-top: 1px solid var(--border); padding: 3rem 0; margin-top: 4rem; text-align: center;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">© 2025 MaxCut Solver API. All rights reserved.</p>
+            <p style="color: var(--text-secondary);">
+                Contact: <a href="mailto:info@qohere.in" style="color: var(--accent);">info@qohere.in</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Tab functionality
+        function showTab(language) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(language + '-content').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Smooth scrolling for sidebar links
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.getAttribute('href').startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        
+                        // Update active state
+                        document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                }
+            });
+        });
+
+        // Copy code functionality
+        document.querySelectorAll('.code-block').forEach(block => {
+            const header = block.querySelector('.code-header');
+            if (header) {
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-button';
+                copyBtn.textContent = 'Copy';
+                copyBtn.onclick = async function() {
+                    const code = block.querySelector('code').textContent;
+                    try {
+                        await navigator.clipboard.writeText(code);
+                        copyBtn.textContent = '✓ Copied!';
+                        setTimeout(() => {
+                            copyBtn.textContent = 'Copy';
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Failed to copy:', err);
+                    }
+                };
+                header.appendChild(copyBtn);
+            }
+        });
+
+        // Highlight current section in sidebar
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    document.querySelectorAll('.sidebar-nav a').forEach(a => {
+                        if (a.getAttribute('href') === `#${id}`) {
+                            a.classList.add('active');
+                        } else {
+                            a.classList.remove('active');
+                        }
+                    });
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('section[id]').forEach(section => {
+            observer.observe(section);
+        });
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.querySelector('.mobile-toggle');
+            if (window.innerWidth <= 1024 && 
+                !sidebar.contains(e.target) && 
+                !toggle.contains(e.target) && 
+                sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>
